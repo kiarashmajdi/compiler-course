@@ -2,6 +2,7 @@
 #include <string>
 #include <vector>
 #include "scanner.h"
+#include <map>
 
 /*
  * C++ Starter code for CS241 A3
@@ -9,6 +10,94 @@
  * This file contains the main function of your program. By default, it just
  * prints the scanned list of tokens back to standard output.
  */
+
+
+
+enum Idcode {
+	IADD = 0,
+	ISUB,
+	IMULT,
+	IMULTU,
+	IDIV,
+	IDIVU,
+	IMFHI,
+	IMFLO,
+	ILIS,
+	ISLT,
+	ISLTU,
+	IBEQ,
+	IBNE,
+	ILW,
+	ISW
+};
+
+const std::map<std::string, int> idMap = {
+	{"add"	, IADD},
+	{"sub"	, ISUB},
+	{"mult"	, IMULT},
+	{"multu", IMULTU},
+	{"div"	, IDIV},
+	{"divu"	, IDIVU},
+	{"mfhi"	, IMFHI},
+	{"mflo"	, IMFLO},
+	{"lis"	, ILIS},
+	{"slt"	, ISLT},
+	{"sltu"	, ISLTU},
+	{"beq"	, IBEQ},
+	{"bne"	, IBNE},
+	{"lw"	, ILW},
+	{"sw"	, ISW}	
+};
+
+
+enum Fncode {
+	ADD		= 0x20,		// 10 0000
+	SUB		= 0x22,		// 10 0010
+	MULT		= 0x18,		// 01 1000
+	MULTU		= 0x19,		// 01 1001
+	DIV		= 0x1A,		// 01 1010
+	DIVU		= 0x1B,		// 01 1011
+	MFHI		= 0x10,		// 01 0000
+	MFLO		= 0x12,		// 01 0010
+	LIS		= 0x14,		// 01 0100
+	SLT		= 0x2A,		// 10 1010
+	SLTU		= 0x2B,		// 10 1011
+	IMD		= 0x00
+};
+
+enum Opcode {
+	REG		= 0x00,
+	BEQ 		= 0x04, 	// 00 0100
+	BNE 		= 0x05, 	// 00 0101
+	LW 		= 0x23, 	// 10 0011
+	SW 		= 0x2B  	// 10 1011
+};
+
+int getInstruction(Opcode opcode, Fncode fncode, int arg1=0, int arg2=0, int arg3=0) {
+	if (opcode == 0x00) {
+		arg1 = arg1 << 21;
+		arg2 = arg2 << 16;
+		arg3 = arg3 << 11;
+		return fncode | arg1 | arg2 | arg3;
+	}
+	int new_opcode = opcode << 25;
+	arg1 = arg1 << 21;
+	arg2 = arg2 << 16;
+	return opcode | arg1 | arg2 | arg3;
+}
+
+void printInstruction(int instruction) {
+	char byte;
+	while (instruction) {
+		byte = instruction;
+		instruction = instruction >> 8;
+		std::cout << byte;
+	}
+	std::cout << std::endl;
+}
+	
+
+
 int main() {
   std::string line;
   try {
@@ -20,11 +109,11 @@ int main() {
       // for loop in your actual assembler. You might find it easier to
       // use an index-based loop like this:
       // for(int i=0; i<tokenLine.size(); i++) { ... }
-      /*
+      
       for (auto &token : tokenLine) {
         std::cout << token << ' ';
       }
-      */
+      
 
       Token::Kind command = tokenLine[0].getKind();
       switch (command){
@@ -38,15 +127,37 @@ int main() {
 			 */
 
 		      	int64_t num = tokenLine[1].toNumber();
-		        char byte;
-			while (num) {
-				byte = num = num >> 8;
-				std::cout << byte;
-			}
-			std::cout << std::endl;
+		        printInstruction(num);
 			break;
 		      }
 		
+	      case Token::Kind::ID:
+		      {
+			      
+			      std::string lexeme = tokenLine[0].getLexeme();
+			      int arg1 = tokenLine[1].toNumber();
+			      int arg2 = tokenLine[2].toNumber();
+			      int arg3 = tokenLine[3].toNumber();
+			      switch (idMap.at(lexeme)){
+				      case IADD:
+				      		printInstruction(getInstruction(
+									REG, ADD, 
+									arg1, arg2, arg3));
+						break;
+					case IBEQ:
+						printInstruction(getInstruction(
+									BEQ, IMD, 
+									arg1, arg2, arg3));
+						break;
+					default:
+						break;
+
+			      }
+			      break;
+
+		      }
+		      
+		      
 		      // To be implemented for more commands.
 		       
 		default:
