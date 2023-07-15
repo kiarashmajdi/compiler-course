@@ -75,16 +75,23 @@ enum Opcode {
 };
 
 int getInstruction(Opcode opcode, Fncode fncode, int arg1=0, int arg2=0, int arg3=0) {
+	std::cout << "opcode: " << opcode << std::endl;
+	std::cout << "arg1: " << arg1 << std::endl;
+	std::cout << "arg2: " << arg2 << std::endl;
+	std::cout << "arg3: " << arg3 << std::endl;
+	std::cout << "fncode: " << fncode << std::endl;
 	if (opcode == 0x00) {
 		arg1 = arg1 << 21;
 		arg2 = arg2 << 16;
 		arg3 = arg3 << 11;
-		return fncode | arg1 | arg2 | arg3;
+		std::cout << "result: " << (fncode | arg1 | arg2 | arg3) << std::endl;
+		return (fncode | arg1 | arg2 | arg3);
 	}
 	int new_opcode = opcode << 25;
 	arg1 = arg1 << 21;
 	arg2 = arg2 << 16;
-	return opcode | arg1 | arg2 | arg3;
+	std::cout << "result: " << (new_opcode | arg1 | arg2 | arg3) << std::endl;
+	return (new_opcode | arg1 | arg2 | arg3);
 }
 
 void printInstruction(int instruction, std::ofstream &out) {
@@ -125,6 +132,7 @@ int main() {
 			/* This case does not need to consider a leading byte for command.
 			 * input number is stored in variable "num" and is bitwise-shifted 
 			 * into "byte" by 8 bits each time until it becomes 0. As a result,
+      cout << " aint even here? ";
 			 * each byte printed is the representative of 8 bits of the input
 			 * number. In this version, .word of labels is not accounted for yet.
 			 */
