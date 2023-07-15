@@ -3,6 +3,7 @@
 #include <vector>
 #include "scanner.h"
 #include <map>
+#include <fstream>
 
 /*
  * C++ Starter code for CS241 A3
@@ -86,20 +87,22 @@ int getInstruction(Opcode opcode, Fncode fncode, int arg1=0, int arg2=0, int arg
 	return opcode | arg1 | arg2 | arg3;
 }
 
-void printInstruction(int instruction) {
+void printInstruction(int instruction, std::ofstream &out) {
 	char byte;
 	while (instruction) {
 		byte = instruction;
 		instruction = instruction >> 8;
-		std::cout << byte;
+		out << byte;
 	}
-	std::cout << std::endl;
+	out << std::endl;
 }
 	
 
 
 int main() {
   std::string line;
+  std::ofstream out;
+  out.open("out.txt");
   try {
     while (getline(std::cin, line)) {
       // This example code just prints the scanned tokens on each line.
@@ -127,7 +130,7 @@ int main() {
 			 */
 
 		      	int64_t num = tokenLine[1].toNumber();
-		        printInstruction(num);
+		        printInstruction(num, out);
 			break;
 		      }
 		
@@ -142,12 +145,14 @@ int main() {
 				      case IADD:
 				      		printInstruction(getInstruction(
 									REG, ADD, 
-									arg1, arg2, arg3));
+									arg1, arg2, arg3
+									), out);
 						break;
 					case IBEQ:
 						printInstruction(getInstruction(
 									BEQ, IMD, 
-									arg1, arg2, arg3));
+									arg1, arg2, arg3
+									), out);
 						break;
 					default:
 						break;
@@ -162,16 +167,18 @@ int main() {
 		       
 		default:
 		      {
-			std::cout << "Irrelevant" << std::endl;
+			      std::cout << "Written to file" << std::endl;
 			break;
 		      }
       }
+      
       // Remove this when you're done playing with the example program!
       // Printing a random newline character as part of your machine code
       // output will cause you to fail the Marmoset tests.
     }
   } catch (ScanningFailure &f) {
     std::cerr << f.what() << std::endl;
+	out.close();
     return 1;
   }
   // You can add your own catch clause(s) for other kinds of errors.
